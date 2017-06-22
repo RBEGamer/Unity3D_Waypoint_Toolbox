@@ -9,37 +9,21 @@ public class ep_editor_ext_wp_handler : Editor
     public static Vector3 CurrentHandlePosition = Vector3.zero;
     static Vector3 m_OldHandlePosition = Vector3.zero;
     static bool cursor_in_valid_area = false;
-    private static wp_point_types wp_blocks;
-
-    static Transform wp_add_parent_transform = null;
-
-
-    //public static int SelectedBlock
-    //{
-    //    get
-    //    {
-    //        return EditorPrefs.GetInt("SelectedEditorBlock", 0);
-    //    }
-    //    set
-    //    {
-    //        EditorPrefs.SetInt("SelectedEditorBlock", value);
-    //    }
-    //}
-
-
-
-    //AREA WP BLOCK TO SET AT CON_SETMODE
+    private static wp_point_asset wp_blocks;
+    public static int SelectedBlock = -1;
     static GameObject new_block_to_create = null;
-
+    static GameObject clicked_go = null;
 
     static ep_editor_ext_wp_handler()
     {
         SceneView.onSceneGUIDelegate -= OnSceneGUI;
         SceneView.onSceneGUIDelegate += OnSceneGUI;
         //LOAD ASSETS
-        wp_blocks = AssetDatabase.LoadAssetAtPath<wp_point_types>(WP_CON_EDITOR.CON_ASSET_SET_PATH);
+        wp_blocks = AssetDatabase.LoadAssetAtPath<wp_point_asset>(WP_CON_EDITOR.CON_ASSET_SET_PATH);
         new_block_to_create = null;
         SelectedBlock = -1;
+
+     
     }
 
     void OnDestroy()
@@ -50,7 +34,7 @@ public class ep_editor_ext_wp_handler : Editor
     static void OnSceneGUI(SceneView sceneView)
     {
 
-        if (!WP_CON_EDITOR.WP_SET_MODE) { return; }
+       // if (!WP_CON_EDITOR.WP_SET_MODE) { return; }
 
         int controlId = GUIUtility.GetControlID(FocusType.Passive);
 
@@ -58,8 +42,8 @@ public class ep_editor_ext_wp_handler : Editor
         if (Event.current.type == EventType.keyDown &&Event.current.keyCode == KeyCode.Escape){
             WP_CON_EDITOR.deselect_tools();
         }
-
-        if (Event.current.type == EventType.mouseDown && Event.current.button == 0 && Event.current.alt == false && Event.current.shift == false && Event.current.control == false)
+        //SET PLACE BLOCK
+        if (WP_CON_EDITOR.WP_SET_MODE && Event.current.type == EventType.mouseDown && Event.current.button == 0 && Event.current.alt == false && Event.current.shift == false && Event.current.control == false)
         {
            if(new_block_to_create != null && cursor_in_valid_area)
             {
@@ -68,12 +52,32 @@ public class ep_editor_ext_wp_handler : Editor
                 new_block_to_create = null;
             }
         }
-        else if (Event.current.type == EventType.mouseDown && Event.current.button == 1 && Event.current.alt == false && Event.current.shift == false && Event.current.control == false)
-        {
+        //SET DESELCE BLOCK
+        if (WP_CON_EDITOR.WP_SET_MODE && Event.current.type == EventType.mouseDown && Event.current.button == 1 && Event.current.alt == false && Event.current.shift == false && Event.current.control == false){
             new_block_to_create = null;
         }
 
+
+        if (WP_CON_EDITOR.WP_REMOVE_MODE && Event.current.type == EventType.mouseDown && Event.current.button == 0 && Event.current.alt == false && Event.current.shift == false && Event.current.control == false)
+        {
+            if (clicked_go != null)
+            {
+                if (clicked_go.transform.tag == WP_CON_EDITOR.CON_WP_WP_TAG && clicked_go.GetComponent<wp_point_info>() != null)
+                {
+                    WP_CON_EDITOR.CON_WP_MANAGER_OBJ.GetComponent<wp_manager>().unregister_wp_and_destroy(clicked_go);
+                }
+            }
+        }
+
+
+        
+
+
+
             HandleUtility.AddDefaultControl(controlId);
+
+
+
         UpdateHandlePosition();
         UpdateRepaint();
         DrawCustomBlockButtons(sceneView);
@@ -89,7 +93,7 @@ public class ep_editor_ext_wp_handler : Editor
         }
 
         Vector2 mousePosition = new Vector2(Event.current.mousePosition.x, Event.current.mousePosition.y);
-       
+
         Ray ray = HandleUtility.GUIPointToWorldRay(mousePosition);
         RaycastHit hit;
 
@@ -97,7 +101,7 @@ public class ep_editor_ext_wp_handler : Editor
         {
             Vector3 offset = Vector3.zero;
              offset = hit.normal;
-
+            clicked_go = hit.collider.gameObject; //SET HERE THE POINT OBJECT
             CurrentHandlePosition.x = Mathf.Floor(hit.point.x - hit.normal.x * 0.001f + offset.x);
             CurrentHandlePosition.y = Mathf.Floor(hit.point.y - hit.normal.y * 0.001f + offset.y);
             CurrentHandlePosition.z = Mathf.Floor(hit.point.z - hit.normal.z * 0.001f + offset.z);
@@ -115,21 +119,21 @@ public class ep_editor_ext_wp_handler : Editor
 
     static void UpdateRepaint()
     {
-        //DRAW HANDLE INDICATOR
-        UnityEditor.Handles.color = Color.red;
-        if (cursor_in_valid_area)
+        //IF IN SET MODE DRAW CIRCLE INDICATOR
+        if (WP_CON_EDITOR.WP_SET_MODE)
         {
-            UnityEditor.Handles.color = Color.green;
-        }
-        UnityEditor.Handles.DrawWireDisc(CurrentHandlePosition+ new Vector3(0.0f,0.1f,0.0f), Vector3.up, 1.0f);
+            UnityEditor.Handles.color = Color.red;
+            if (cursor_in_valid_area){
+                UnityEditor.Handles.color = Color.green;
+            }
+            UnityEditor.Handles.DrawWireDisc(CurrentHandlePosition + new Vector3(0.0f, 0.1f, 0.0f), Vector3.up, 1.0f);
 
-
-        //If the cube handle position has changed, repaint the scene
-        if (CurrentHandlePosition != m_OldHandlePosition)
-        {
-                        SceneView.RepaintAll();
-            m_OldHandlePosition = CurrentHandlePosition;
+            if (CurrentHandlePosition != m_OldHandlePosition){
+                SceneView.RepaintAll();
+                m_OldHandlePosition = CurrentHandlePosition;
+            }
         }
+
     }
 
     public static void AddWaypoint(Vector3 position, GameObject prefab)
@@ -139,9 +143,11 @@ public class ep_editor_ext_wp_handler : Editor
             return;
         }
         GameObject newCube = (GameObject)PrefabUtility.InstantiatePrefab(prefab);
-        if (wp_add_parent_transform != null)
+        newCube.transform.tag = WP_CON_EDITOR.CON_WP_WP_TAG;
+        WP_CON_EDITOR.CON_WP_MANAGER_OBJ.GetComponent<wp_manager>().register_wp(newCube);
+        if (WP_CON_EDITOR.CON_WP_MANAGER_OBJ != null)
         {
-            newCube.transform.parent = wp_add_parent_transform;
+            newCube.transform.parent = WP_CON_EDITOR.CON_WP_MANAGER_OBJ.transform;
         }
         newCube.transform.position = position;
         Undo.RegisterCreatedObjectUndo(newCube, "Add " + prefab.name);
@@ -174,7 +180,7 @@ public class ep_editor_ext_wp_handler : Editor
 
 
 
-    public static int SelectedBlock = -1;
+
    
 
     static void DrawCustomBlockButton(int index, Rect sceneViewRect)
