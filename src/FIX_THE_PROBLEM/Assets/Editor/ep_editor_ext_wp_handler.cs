@@ -34,7 +34,7 @@ public class ep_editor_ext_wp_handler : Editor
     static void OnSceneGUI(SceneView sceneView)
     {
 
-       // if (!WP_CON_EDITOR.WP_SET_MODE) { return; }
+        if (!WP_CON_EDITOR.WP_SET_MODE && !WP_CON_EDITOR.WP_REMOVE_MODE) { return; }
 
         int controlId = GUIUtility.GetControlID(FocusType.Passive);
 
@@ -163,25 +163,27 @@ public class ep_editor_ext_wp_handler : Editor
 
     static void DrawCustomBlockButtons(SceneView sceneView)
     {
-        Handles.BeginGUI();
+        if (wp_blocks != null)
+        {
+            Handles.BeginGUI();
 
         GUI.Box(new Rect(0, 0, 110, sceneView.position.height - 35), GUIContent.none, EditorStyles.textArea);
 
-        if (wp_blocks != null)
-        {
+        
             for (int i = 0; i < wp_blocks.Blocks.Count; ++i)
             {
                 DrawCustomBlockButton(i, sceneView.position);
             }
-        }
+        
         Handles.EndGUI();
+    }
     }
 
 
 
 
 
-   
+
 
     static void DrawCustomBlockButton(int index, Rect sceneViewRect)
     {
