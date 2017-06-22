@@ -18,13 +18,56 @@ public class wp_point_info : MonoBehaviour {
     public long id = -1;
     public bool registered = false;
 
+
+
+    public List<GameObject> neighbour_wp = new List<GameObject>();
+
+
+    public bool reg_neighbour(GameObject _go, bool _make_bidorectional = false)
+    {
+        if(_go.GetComponent<wp_point_info>() == null)
+        {
+            Debug.LogError("NEIGHBOUR REGISTER FAILED - no wp info script");
+            return false;
+        }
+        foreach (GameObject n in neighbour_wp)
+        {
+            if(n == _go)
+            {
+                Debug.LogError("NEIGHBOUR REGISTER FAILED - neighbour already exists");
+                return false;
+            }
+        }
+        if (_make_bidorectional)
+        {
+            _go.GetComponent<wp_point_info>().reg_neighbour(this.gameObject);
+            Debug.Log("try to create bidec connection");
+        }
+        neighbour_wp.Add(_go);
+        return true;
+    }
+
+
+
+    private void OnDrawGizmos()
+    {
+        UnityEditor.Handles.color = Color.black;
+        for (int i = 0; i < neighbour_wp.Count; i++)
+        {
+            if(neighbour_wp[i] == null) { continue; }
+            UnityEditor.Handles.DrawLine(this.transform.position + new Vector3(0.0f, 0.1f, 0.0f), neighbour_wp[i].transform.position + new Vector3(0.0f, 0.1f, 0.0f));
+        }
+    }
+
+
+
+
     public void get_reg_data(long _id)
     {
         id = _id;
         this.name = "wp_" + type.ToString().ToLower() + "_" + id.ToString();
         registered = true;
     }
-
     public void get_unreg_data()
     {
         id = -1;

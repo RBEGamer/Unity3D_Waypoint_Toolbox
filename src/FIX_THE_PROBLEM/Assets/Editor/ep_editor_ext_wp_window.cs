@@ -29,18 +29,27 @@ void OnGUI()
             WP_CON_EDITOR.deselect_tools();
     }
 
-    if (!WP_CON_EDITOR.WP_REMOVE_MODE && GUILayout.Button("ENABLE CONNECTION REMOVE MODE"))
+    if (!WP_CON_EDITOR.WP_REMOVE_MODE && GUILayout.Button("ENABLE REMOVE MODE"))
     {
             WP_CON_EDITOR.deselect_tools();
             WP_CON_EDITOR.WP_REMOVE_MODE = true;
     }
-    if (WP_CON_EDITOR.WP_REMOVE_MODE && GUILayout.Button("DISABLE CONNECTION REMOVE MODE"))
+    if (WP_CON_EDITOR.WP_REMOVE_MODE && GUILayout.Button("DISABLE REMOVE MODE"))
     {
             WP_CON_EDITOR.deselect_tools();
     }
 
 
-
+        if (!WP_CON_EDITOR.WP_CONNECTION_MODE && GUILayout.Button("ENABLE CONNECTION MODE"))
+        {
+            WP_CON_EDITOR.deselect_tools();
+            WP_CON_EDITOR.WP_CONNECTION_MODE = true;
+        }
+        if (WP_CON_EDITOR.WP_CONNECTION_MODE && GUILayout.Button("DISABLE CONNECTION MODE"))
+        {
+            WP_CON_EDITOR.deselect_tools();
+        }
+        
 
         GUILayout.Label("BASE SETTINGS", EditorStyles.boldLabel);
         WP_CON_EDITOR.set_placement_tag(EditorGUILayout.TextField("VALID_PLACE_TAG", WP_CON_EDITOR.CON_PLACEMENT_TAG));
@@ -62,6 +71,7 @@ public class WP_CON_EDITOR
 {
     public static bool WP_SET_MODE = false;
     public static bool WP_REMOVE_MODE = false;
+    public static bool WP_CONNECTION_MODE = false;
     public static string CON_ASSET_SET_PATH = "Assets\\WP_ASSETS\\wpt.asset";
     public static string CON_PLACEMENT_TAG = "WP_PLACEABLE_GROUND";
     public static string CON_WP_MANAGER_NAME = "WP_MANAGER";
@@ -79,7 +89,7 @@ public class WP_CON_EDITOR
             Debug.LogError("ERROR - PLEASE SET PLACEMENT THE TAG IN THE TAG MANAGER");
             return;
         }
-        Debug.Log("WP_PLACE_TAG - tag exitsts");
+   //     Debug.Log("WP_PLACE_TAG - tag exitsts");
         CON_PLACEMENT_TAG = _s;
     }
 
@@ -95,7 +105,7 @@ public class WP_CON_EDITOR
             Debug.LogError("ERROR - PLEASE SET THE WP TAG IN THE TAG MANAGER");
             return;
         }
-        Debug.Log("WP_TAG - tag exitsts");
+   //     Debug.Log("WP_TAG - tag exitsts");
         CON_WP_WP_TAG = _s;
     }
     public static void set_wp_manager_name(string _s)
@@ -106,7 +116,7 @@ public class WP_CON_EDITOR
         {
             Debug.LogError("WP MANAGER NOT FOUND or SCRIPT NOT PRESENT");
         }
-        Debug.Log("WP_MANAGER FOUND");
+     //   Debug.Log("WP_MANAGER FOUND");
         CON_WP_MANAGER_NAME = _s;
         CON_WP_MANAGER_OBJ = mgr;
     }
@@ -122,13 +132,14 @@ public class WP_CON_EDITOR
             CON_ASSET_SET_PATH = "";
         }
         CON_ASSET_SET_PATH = _s;
-        Debug.Log("WP_ASSET - Path succ set");
+    //    Debug.Log("WP_ASSET - Path succ set");
        
     }
     public static void deselect_tools()
     {
         WP_REMOVE_MODE = false;
         WP_SET_MODE = false;
+        WP_CONNECTION_MODE = false;
     }
 
 

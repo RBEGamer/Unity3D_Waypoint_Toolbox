@@ -34,7 +34,7 @@ public class ep_editor_ext_wp_handler : Editor
     static void OnSceneGUI(SceneView sceneView)
     {
 
-        if (!WP_CON_EDITOR.WP_SET_MODE && !WP_CON_EDITOR.WP_REMOVE_MODE) { return; }
+        if (!WP_CON_EDITOR.WP_SET_MODE && !WP_CON_EDITOR.WP_REMOVE_MODE && !WP_CON_EDITOR.WP_CONNECTION_MODE) { return; }
 
         int controlId = GUIUtility.GetControlID(FocusType.Passive);
 
@@ -57,7 +57,7 @@ public class ep_editor_ext_wp_handler : Editor
             new_block_to_create = null;
         }
 
-
+        //REMOVE NODE
         if (WP_CON_EDITOR.WP_REMOVE_MODE && Event.current.type == EventType.mouseDown && Event.current.button == 0 && Event.current.alt == false && Event.current.shift == false && Event.current.control == false)
         {
             if (clicked_go != null)
@@ -106,7 +106,6 @@ public class ep_editor_ext_wp_handler : Editor
             CurrentHandlePosition.y = Mathf.Floor(hit.point.y - hit.normal.y * 0.001f + offset.y);
             CurrentHandlePosition.z = Mathf.Floor(hit.point.z - hit.normal.z * 0.001f + offset.z);
            // CurrentHandlePosition += new Vector3(0.5f, 0.5f, 0.5f);
-
             if (hit.collider.tag == WP_CON_EDITOR.CON_PLACEMENT_TAG)
             {
                 cursor_in_valid_area = true;
