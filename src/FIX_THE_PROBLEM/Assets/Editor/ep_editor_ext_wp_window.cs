@@ -65,6 +65,12 @@ void OnGUI()
 		WP_CON_EDITOR.WP_SET_MODE_HOLD_LAST_POINT = EditorGUILayout.Toggle(WP_CON_EDITOR.WP_SET_MODE_HOLD_LAST_POINT, "HOLD LAST WP");
 		}
 
+		if (WP_CON_EDITOR.WP_CONNECTION_MODE){
+			GUILayout.Label("CONNECTION SETTINGS", EditorStyles.boldLabel);
+			WP_CON_EDITOR.WP_CONNECTION_MODE_MAKE_BIDIR = EditorGUILayout.Toggle(WP_CON_EDITOR.WP_CONNECTION_MODE_MAKE_BIDIR, "MAKE BIDIRECTIONAL CONNECTION");
+		}
+
+
     }
 
 
@@ -86,7 +92,7 @@ public class WP_CON_EDITOR
     public static GameObject CON_WP_MANAGER_OBJ = null;
     public static string CON_WP_WP_TAG = "WP";
 	public static bool WP_SET_MODE_HOLD_LAST_POINT = true;
-
+	public static bool WP_CONNECTION_MODE_MAKE_BIDIR = false;
     public static void set_placement_tag(string _s)
     {
         bool found = false;

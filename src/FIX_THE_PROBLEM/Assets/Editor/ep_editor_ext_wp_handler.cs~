@@ -15,6 +15,10 @@ public class ep_editor_ext_wp_handler : Editor
     static GameObject clicked_go = null;
 	static bool was_one_time_remove = false;
 
+	//VARS FOR CONNECTION MODE
+	static GameObject con_mode_first_go = null;
+	static GameObject con_mode_second_go = null;
+
     static ep_editor_ext_wp_handler()
     {
         SceneView.onSceneGUIDelegate -= OnSceneGUI;
@@ -55,8 +59,9 @@ public class ep_editor_ext_wp_handler : Editor
         }
         //SET DESELCE BLOCK
         if (WP_CON_EDITOR.WP_SET_MODE && Event.current.type == EventType.mouseDown && Event.current.button == 1 && Event.current.alt == false && Event.current.shift == false && Event.current.control == false){
-            	new_block_to_create = null;
-				Debug.Log("enter was one time remove mode");
+			if(!WP_CON_EDITOR.WP_SET_MODE_HOLD_LAST_POINT){
+				new_block_to_create = null;
+			}
 				was_one_time_remove = true;
 				WP_CON_EDITOR.deselect_tools();
 				WP_CON_EDITOR.WP_REMOVE_MODE = true;
@@ -79,8 +84,40 @@ public class ep_editor_ext_wp_handler : Editor
         }
 
 
-        
+        //CONNECTION MODE
+		if (WP_CON_EDITOR.WP_CONNECTION_MODE && Event.current.type == EventType.mouseDown && Event.current.button == 0 && Event.current.alt == false && Event.current.shift == false && Event.current.control == false)
+		{
+			if (clicked_go != null)
+			{
+				if (con_mode_first_go == null && clicked_go.GetComponent<wp_point_info>() != null)
+				{	con_mode_first_go = clicked_go;
+					con_mode_second_go = null;
+					Debug.Log("SELECT FIRST OBJ");
+				}else if(con_mode_first_go != null && con_mode_second_go == null){
+					if(con_mode_first_go != clicked_go){
+						con_mode_second_go = clicked_go;
+						Debug.Log("SELECT SECOND OBJ");
+					}
 
+					if(con_mode_first_go != null && con_mode_second_go != null && clicked_go.GetComponent<wp_point_info>() != null){
+						
+
+							//MAKE A CON
+						Debug.Log("MAKE CON");
+							con_mode_first_go.GetComponent<wp_point_info>().reg_neighbour(con_mode_second_go);
+						con_mode_first_go = null;
+						con_mode_second_go = null;
+					}
+
+				}else{
+				con_mode_first_go = null;
+				con_mode_second_go = null;
+				}
+
+
+
+			}
+		}
 
 
             HandleUtility.AddDefaultControl(controlId);
@@ -175,16 +212,13 @@ public class ep_editor_ext_wp_handler : Editor
         {
             Handles.BeginGUI();
 
-        GUI.Box(new Rect(0, 0, 110, sceneView.position.height - 35), GUIContent.none, EditorStyles.textArea);
-
-        
+        GUI.Box(new Rect(0, 0, 110, sceneView.position.height - 35), GUIContent.none, EditorStyles.textArea);     
             for (int i = 0; i < wp_blocks.Blocks.Count; ++i)
             {
                 DrawCustomBlockButton(i, sceneView.position);
-            }
-        
+            }    
         Handles.EndGUI();
-    }
+    	}
     }
 
 
@@ -195,8 +229,6 @@ public class ep_editor_ext_wp_handler : Editor
 
     static void DrawCustomBlockButton(int index, Rect sceneViewRect)
     {
-
-
         if (WP_CON_EDITOR.WP_SET_MODE)
         {
             bool isActive = false;
