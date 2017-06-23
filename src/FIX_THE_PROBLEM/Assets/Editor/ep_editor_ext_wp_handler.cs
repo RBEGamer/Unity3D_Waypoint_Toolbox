@@ -82,6 +82,13 @@ public class ep_editor_ext_wp_handler : Editor
 				}
             }
         }
+		//SET DESELCE WP IN CON MODE
+		if (WP_CON_EDITOR.WP_CONNECTION_MODE && Event.current.type == EventType.mouseDown && Event.current.button == 1 && Event.current.alt == false && Event.current.shift == false && Event.current.control == false){
+			con_mode_first_go = null;
+			con_mode_second_go = null;
+			clicked_go = null;
+		}
+
 
 
         //CONNECTION MODE
@@ -89,22 +96,32 @@ public class ep_editor_ext_wp_handler : Editor
 		{
 			if (clicked_go != null)
 			{
+				//ASSIGN FIRST
 				if (con_mode_first_go == null && clicked_go.GetComponent<wp_point_info>() != null)
 				{	con_mode_first_go = clicked_go;
 					con_mode_second_go = null;
-					Debug.Log("SELECT FIRST OBJ");
+					//ASSIGN SECOND
 				}else if(con_mode_first_go != null && con_mode_second_go == null){
 					if(con_mode_first_go != clicked_go){
 						con_mode_second_go = clicked_go;
-						Debug.Log("SELECT SECOND OBJ");
 					}
-
+					//AND AM
+					//TODO IMPROVE IT FOR BIDIR CONNECTIOS
 					if(con_mode_first_go != null && con_mode_second_go != null && clicked_go.GetComponent<wp_point_info>() != null){
-						
+						//if this connection doesnt exitsts
+						if(!con_mode_first_go.GetComponent<wp_point_info>().has_neighbour(con_mode_second_go)){
+							//ADD OBJ
+							con_mode_first_go.GetComponent<wp_point_info>().reg_neighbour(con_mode_second_go, WP_CON_EDITOR.WP_CONNECTION_MODE_MAKE_BIDIR);
+						}else{
+							//was_one_time_remove OBJ
+							con_mode_first_go.GetComponent<wp_point_info>().unreg_neighbour(con_mode_second_go,WP_CON_EDITOR.WP_CONNECTION_MODE_MAKE_BIDIR);
+						}
 
-							//MAKE A CON
-						Debug.Log("MAKE CON");
-							con_mode_first_go.GetComponent<wp_point_info>().reg_neighbour(con_mode_second_go);
+						Undo.RegisterCreatedObjectUndo(con_mode_first_go, "Make Connection ");
+						Undo.RegisterCreatedObjectUndo(con_mode_second_go, "Make Connection ");
+						UnityEditor.SceneManagement.EditorSceneManager.MarkAllScenesDirty();
+
+
 						con_mode_first_go = null;
 						con_mode_second_go = null;
 					}
@@ -164,20 +181,33 @@ public class ep_editor_ext_wp_handler : Editor
 
     static void UpdateRepaint()
     {
-        //IF IN SET MODE DRAW CIRCLE INDICATOR
+        //IF IN SET MODE DRAW CIRCLE INDICATOR AROUND THE MOUSE POSITION
         if (WP_CON_EDITOR.WP_SET_MODE)
         {
             UnityEditor.Handles.color = Color.red;
             if (cursor_in_valid_area){
                 UnityEditor.Handles.color = Color.green;
             }
-            UnityEditor.Handles.DrawWireDisc(CurrentHandlePosition + new Vector3(0.0f, 0.1f, 0.0f), Vector3.up, 1.0f);
+            UnityEditor.Handles.DrawWireDisc(CurrentHandlePosition + new Vector3(0.0f, 0.1f, 0.0f), Vector3.up, 0.5f);
 
             if (CurrentHandlePosition != m_OldHandlePosition){
                 SceneView.RepaintAll();
                 m_OldHandlePosition = CurrentHandlePosition;
             }
         }
+
+		//IF IN CON MODE DRAW MODE MARK SELECTED NODES WITH A CIRCLE
+		if(WP_CON_EDITOR.WP_CONNECTION_MODE){
+			if(con_mode_first_go != null){
+				UnityEditor.Handles.color = Color.blue;
+				UnityEditor.Handles.DrawWireDisc(con_mode_first_go.transform.position + new Vector3(0.0f, 0.1f, 0.0f), Vector3.up, 1.0f);
+			}
+			if(con_mode_second_go != null){
+				UnityEditor.Handles.color = Color.cyan;
+				UnityEditor.Handles.DrawWireDisc(con_mode_second_go.transform.position + new Vector3(0.0f, 0.1f, 0.0f), Vector3.up, 1.0f);
+			}
+
+		}
 
     }
 
