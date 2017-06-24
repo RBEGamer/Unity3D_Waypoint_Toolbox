@@ -31,6 +31,9 @@ public class wp_point_info : MonoBehaviour {
 			_go.GetComponent<wp_point_info>().unreg_neighbour(this.gameObject,false);
 		}
 		neighbour_wp.Remove(_go);
+		_go.GetComponent<wp_point_info>().update_wp_renderer();
+		remove_unness_neigh();
+		update_wp_renderer();
 		return true;
 	}
 
@@ -55,9 +58,22 @@ public class wp_point_info : MonoBehaviour {
         }   
 			//finally register in list
         neighbour_wp.Add(_go);
+		_go.GetComponent<wp_point_info>().update_wp_renderer();
+		remove_unness_neigh();
+		update_wp_renderer();
         return true;
     }
 
+	//removes null objects from list (if the user deletes points without the editor extention)
+	public void remove_unness_neigh(){
+		List<GameObject> tmpl = new List<GameObject>();
+		for (int i = 0; i < neighbour_wp.Count; i++) {
+			if(neighbour_wp[i] != null){
+				tmpl.Add(neighbour_wp[i]);
+			}
+		}
+		neighbour_wp = tmpl;
+	}
 
 	public bool has_neighbour(GameObject _go){
 		if(_go == null || _go.GetComponent<wp_point_info>() == null){
@@ -71,8 +87,7 @@ public class wp_point_info : MonoBehaviour {
 		}
 		return false;
 	}
-
-
+		
     private void OnDrawGizmos()
     {
         UnityEditor.Handles.color = Color.black;
@@ -83,16 +98,15 @@ public class wp_point_info : MonoBehaviour {
 			UnityEditor.Handles.DrawWireCube(Vector3.Lerp(this.transform.position,neighbour_wp[i].transform.position,0.8f),new Vector3(0.1f,0.1f,0.1f));
 		}
     }
-
-
-
-
+		
     public void get_reg_data(long _id)
     {
         id = _id;
         this.name = "wp_" + type.ToString().ToLower() + "_" + id.ToString();
         registered = true;
     }
+
+	[ContextMenu("UNREGISTER WAYPOINT")]
     public void get_unreg_data()
     {
 		//DELETE this go OWN ON NEIGHBOURS
@@ -105,17 +119,28 @@ public class wp_point_info : MonoBehaviour {
         id = -1;
         registered = false;
         this.name = "wp_" + type.ToString().ToLower() + "_" + id.ToString() + "invalid";
+		update_wp_renderer();
+
     }
 
 
-
+	public void update_wp_renderer(){
+		//IF A wp_point_way_line_renderer componend is attached
+		if(this.gameObject.GetComponent<wp_point_way_line_renderer>() != null){
+			this.gameObject.GetComponent<wp_point_way_line_renderer>().update_renderer();
+		}
+		//TODO
+		//IF A wp_point_way_mesh_renderer componen is attached
+	}
 
 
 	// Use this for initialization
 	void Start () {
 		if(neighbour_wp.Count <= 0 && type == WP_TYPE.WP_START){
-			Debug.LogWarning("Th")
+			Debug.LogWarning("This START_WAYPOINT has no neighbours");
 		}
+
+
     }
 	
 	// Update is called once per frame

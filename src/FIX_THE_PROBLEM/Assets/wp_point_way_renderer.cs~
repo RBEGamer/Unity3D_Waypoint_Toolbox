@@ -1,0 +1,125 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+
+
+public class wp_point_way_renderer : MonoBehaviour {
+
+
+
+	private wp_point_info wpinf = null;
+	public bool is_half_line = true;
+
+
+	public List<Vector3> render_points = new List<Vector3>();
+	public List<bool> is_half_points = new List<bool>(); // TODO DELETE
+
+
+	public  GameObject wp_info_holder_go =null;//this.gameObject.transform.parent.gameObject;
+
+	private LineRenderer lr = null;
+
+
+
+	[ContextMenu("UPDATE RENDERER")]
+	public void update_renderer(){
+		check_create_dep();
+		rebuild_pos_list();
+		generate_linerenderer();
+	}
+
+	[ContextMenu("RUN DEP CHECK")]
+	public void check_create_dep(){
+		//CHECK PARENT OBJ
+		if(wp_info_holder_go == null){
+			wp_info_holder_go = this.gameObject;
+			if(wp_info_holder_go == null){
+				Debug.Log("bla");
+				wp_info_holder_go = this.gameObject.transform.parent.gameObject;
+				if(wp_info_holder_go == null){
+				Debug.LogError("ERROR WP_RENDER - parent not found please set wp_info_holder_go manually");
+				return;
+				}
+			}
+		}
+		//CHECK WP_INFO_COMONENT
+		if(wpinf == null){
+			wpinf = wp_info_holder_go.GetComponent<wp_point_info>();
+			if(wpinf == null){
+				Debug.LogError("ERROR WP_RENDER - pthe wp_info_holder_go has no wp_info_component");
+				return;
+			}
+		}
+		//CHECK MESH_FILTER_COMPONENT
+		if(lr == null){
+			lr = this.gameObject.GetComponent<LineRenderer>();
+			if(lr == null){
+				lr = (LineRenderer)this.gameObject.AddComponent(typeof(LineRenderer));
+				if(lr == null){
+					Debug.LogError("ERROR WP_RENDER - unable to add MeshFilterComponent");
+					return;
+				}
+			}
+		}
+
+		Debug.Log("INFO WP_RENDERER - dep check ok");
+	}
+
+
+
+
+	[ContextMenu("REBUILD POS LIST")]
+	public void rebuild_pos_list(){
+		if(wpinf == null){
+			check_create_dep();
+		}
+		is_half_points.Clear();
+		render_points.Clear();
+		for (int i = 0; i < wpinf.neighbour_wp.Count; i++) {
+			if(wpinf.neighbour_wp[i] == null){continue;}
+			is_half_points.Add(false);
+			Vector3 d_pos = wpinf.neighbour_wp[i].transform.position;
+			//is a bidi connection only draw the half way
+			if(wpinf.neighbour_wp[i].GetComponent<wp_point_info>().has_neighbour(wp_info_holder_go)){
+				d_pos = Vector3.Lerp(this.transform.position, d_pos,0.5f);
+				is_half_points[is_half_points.Count-1] = true;
+			}
+			render_points.Add(d_pos);
+		}
+	}
+
+	[ContextMenu("GENERATE LINE_RENDERER")]
+	public void generate_linerenderer(){
+
+		if(render_points.Count <= 0){
+			lr.enabled = false;
+			return;
+		}else{
+			lr.enabled = true;
+		}
+
+		List<Vector3> pos = new List<Vector3>();
+
+		for (int i = 0; i < render_points.Count; i++) {
+			pos.Add(wp_info_holder_go.transform.position);
+			pos.Add(render_points[i]);
+
+		}
+
+		lr.startWidth = 0.05f;
+		lr.endWidth = 0.05f;
+		lr.SetPositions(pos.ToArray());
+	}
+
+
+	// Use this for initialization
+	void Start () {
+		
+	}
+	
+	// Update is called once per frame
+	void Update () {
+		
+	}
+}

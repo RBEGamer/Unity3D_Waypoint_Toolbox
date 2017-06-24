@@ -108,6 +108,8 @@ public class ep_editor_ext_wp_handler : Editor
 					//AND AM
 					//TODO IMPROVE IT FOR BIDIR CONNECTIOS
 					if(con_mode_first_go != null && con_mode_second_go != null && clicked_go.GetComponent<wp_point_info>() != null){
+						Undo.RecordObject(con_mode_first_go, "make con first go");
+						Undo.RecordObject(con_mode_second_go, "make con second go");
 						//if this connection doesnt exitsts
 						if(!con_mode_first_go.GetComponent<wp_point_info>().has_neighbour(con_mode_second_go)){
 							//ADD OBJ
@@ -116,12 +118,11 @@ public class ep_editor_ext_wp_handler : Editor
 							//was_one_time_remove OBJ
 							con_mode_first_go.GetComponent<wp_point_info>().unreg_neighbour(con_mode_second_go,WP_CON_EDITOR.WP_CONNECTION_MODE_MAKE_BIDIR);
 						}
+						//Undo.RegisterCreatedObjectUndo(con_mode_first_go.GetComponent<wp_point_info>(), "Make Connection ");
+						//Undo.RegisterCreatedObjectUndo(con_mode_second_go.GetComponent<wp_point_info>(), "Make Connection ");
 
-						Undo.RegisterCreatedObjectUndo(con_mode_first_go, "Make Connection ");
-						Undo.RegisterCreatedObjectUndo(con_mode_second_go, "Make Connection ");
+						Undo.FlushUndoRecordObjects();
 						UnityEditor.SceneManagement.EditorSceneManager.MarkAllScenesDirty();
-
-
 						con_mode_first_go = null;
 						con_mode_second_go = null;
 					}
@@ -225,7 +226,7 @@ public class ep_editor_ext_wp_handler : Editor
             newCube.transform.parent = WP_CON_EDITOR.CON_WP_MANAGER_OBJ.transform;
         }
         newCube.transform.position = position;
-        Undo.RegisterCreatedObjectUndo(newCube, "Add " + prefab.name);
+      //  Undo.RegisterCreatedObjectUndo(newCube, "Add " + prefab.name);
         UnityEditor.SceneManagement.EditorSceneManager.MarkAllScenesDirty();
     }
 
